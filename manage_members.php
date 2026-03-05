@@ -239,10 +239,6 @@ $result = $con->query($query);
 
                         <td>
 
-                            <a class="btn assign" href="assign_plan.php?user_id=<?= $row['user_id'] ?>">
-                                Assign Plan
-                            </a>
-
                             <a class="btn profile" href="member_profile.php?id=<?= $row['user_id'] ?>">
                                 Profile
                             </a>

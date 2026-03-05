@@ -12,27 +12,34 @@ $id = intval($_GET['id']);
 /* MEMBER INFO */
 
 $user = $con->query("
-SELECT * FROM users
-WHERE user_id=$id
+SELECT *
+FROM users
+WHERE user_id = $id
 ")->fetch_assoc();
+
+if (!$user) {
+    echo "Member not found";
+    exit;
+}
+
+$email = $user['email'];
 
 /* MEMBERSHIP */
 
 $membership = $con->query("
-SELECT m.*,p.name
-FROM memberships m
-JOIN membership_plans p ON p.plan_id=m.plan_id
-WHERE m.user_id=$id
-ORDER BY m.end_date DESC
+SELECT *
+FROM memberships
+WHERE email = '$email'
+ORDER BY end_date DESC
 LIMIT 1
 ")->fetch_assoc();
 
 /* ATTENDANCE */
 
 $attendance = $con->query("
-SELECT status,attendance_date
+SELECT status, attendance_date
 FROM attendance
-WHERE user_id=$id
+WHERE user_id = $id
 ORDER BY attendance_date DESC
 LIMIT 10
 ");
@@ -52,6 +59,19 @@ LIMIT 10
             color: #eee;
             font-family: Poppins;
             padding: 30px;
+            animation: fadeBody .6s ease;
+        }
+
+        @keyframes fadeBody {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .container {
@@ -62,13 +82,25 @@ LIMIT 10
         .card {
             background: #1c1c1c;
             padding: 25px;
-            margin-bottom: 20px;
-            border-radius: 10px;
+            margin-bottom: 25px;
+            border-radius: 12px;
             box-shadow: 0 0 15px rgba(255, 165, 0, .2);
+            transition: .3s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(255, 165, 0, .3);
         }
 
         h2 {
             color: #ffa500;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin: 8px 0;
+            font-size: 15px;
         }
 
         table {
@@ -89,12 +121,31 @@ LIMIT 10
             color: #ffa500;
         }
 
+        tr:hover {
+            background: #262626;
+        }
+
         .present {
             color: #00ff6a;
+            font-weight: 600;
         }
 
         .absent {
             color: #ff4c4c;
+            font-weight: 600;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            color: #ffa500;
+            text-decoration: none;
+            font-weight: 600;
+            transition: .3s;
+        }
+
+        .back:hover {
+            color: #fff;
         }
     </style>
 
@@ -108,9 +159,9 @@ LIMIT 10
 
             <h2>Member Details</h2>
 
-            <p><b>Name :</b> <?= $user['full_name'] ?></p>
-            <p><b>Email :</b> <?= $user['email'] ?></p>
-            <p><b>Phone :</b> <?= $user['phone'] ?></p>
+            <p><b>Name :</b> <?= htmlspecialchars($user['full_name']) ?></p>
+            <p><b>Email :</b> <?= htmlspecialchars($user['email']) ?></p>
+            <p><b>Phone :</b> <?= htmlspecialchars($user['phone']) ?></p>
 
         </div>
 
@@ -121,9 +172,10 @@ LIMIT 10
 
             <?php if ($membership): ?>
 
-                <p><b>Plan :</b> <?= $membership['name'] ?></p>
-                <p><b>Start :</b> <?= $membership['start_date'] ?></p>
-                <p><b>End :</b> <?= $membership['end_date'] ?></p>
+                <p><b>Plan :</b> <?= htmlspecialchars($membership['plan']) ?></p>
+                <p><b>Start :</b> <?= htmlspecialchars($membership['start_date']) ?></p>
+                <p><b>End :</b> <?= htmlspecialchars($membership['end_date']) ?></p>
+                <p><b>Amount :</b> ₹<?= htmlspecialchars($membership['amount']) ?></p>
 
             <?php else: ?>
 
@@ -149,12 +201,10 @@ LIMIT 10
 
                     <tr>
 
-                        <td><?= $row['attendance_date'] ?></td>
+                        <td><?= htmlspecialchars($row['attendance_date']) ?></td>
 
                         <td class="<?= $row['status'] ?>">
-
                             <?= ucfirst($row['status']) ?>
-
                         </td>
 
                     </tr>
@@ -165,7 +215,7 @@ LIMIT 10
 
         </div>
 
-        <a href="manage_members.php" style="color:#ffa500;">⬅ Back</a>
+        <a href="manage_members.php" class="back">⬅ Back</a>
 
     </div>
 

@@ -14,6 +14,9 @@ $full_name = $_SESSION['full_name'];
 
 $currentDate = date("Y-m-d");
 
+/* DAILY QR DATA */
+$qrData = "GYMEDGE_USER_" . $user_id . "_" . $currentDate;
+
 /* CHECK TODAY ATTENDANCE */
 
 $stmt = $con->prepare("
@@ -96,7 +99,6 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
             text-align: center;
             color: #ffb700;
             margin-bottom: 10px;
-            animation: fadeDown .8s ease;
         }
 
         .clock {
@@ -151,6 +153,34 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
         .absent {
             color: #ff4d4d;
             border: 1px solid #ff4d4d;
+        }
+
+        .qr-box {
+            margin-top: 25px;
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 165, 0, .4);
+            animation: fadeUp .6s ease;
+        }
+
+        .qr-box img {
+            margin-top: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 165, 0, .5);
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .card-title {
@@ -218,8 +248,6 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
 
     <div class="clock" id="clock"></div>
 
-    <!-- INFO CARD -->
-
     <div class="card">
 
         <div class="info">
@@ -245,9 +273,7 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
 
                 <?php else: ?>
 
-                    <span class="badge absent">
-                        Not Marked
-                    </span>
+                    <span class="badge absent">Not Marked</span>
 
                 <?php endif; ?>
 
@@ -268,9 +294,22 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
 
         </div>
 
+        <?php if (!$attendanceExists): ?>
+
+            <div class="qr-box">
+
+                <h3>📲 Show This QR At Gym Entry</h3>
+
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=<?= urlencode($qrData) ?>">
+
+                <p>This QR is valid only for today.</p>
+
+            </div>
+
+        <?php endif; ?>
+
     </div>
 
-    <!-- HISTORY -->
 
     <div class="card">
 
@@ -299,9 +338,7 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
                         <td><?= date("h:i:s A", strtotime($row['attendance_date'])) ?></td>
 
                         <td class="status-<?= $row['status'] ?>">
-
                             <?= ucfirst($row['status']) ?>
-
                         </td>
 
                     </tr>
@@ -314,7 +351,6 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
 
     </div>
 
-    <!-- STATS -->
 
     <div class="card">
 
@@ -333,13 +369,9 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
 
                 <td><?= $total ?></td>
 
-                <td style="color:#00ff6a;font-weight:600">
-                    <?= $present ?>
-                </td>
+                <td style="color:#00ff6a;font-weight:600"><?= $present ?></td>
 
-                <td style="color:#ff4d4d;font-weight:600">
-                    <?= $absent ?>
-                </td>
+                <td style="color:#ff4d4d;font-weight:600"><?= $absent ?></td>
 
                 <td><?= $percentage ?>%</td>
 
@@ -354,23 +386,14 @@ $percentage = $total ? round(($present / $total) * 100) : 0;
     </button>
 
     <script>
-        /* LIVE CLOCK */
-
         function updateClock() {
-
             let now = new Date();
-
             let time = now.toLocaleTimeString();
-
             document.getElementById("clock").innerText = time;
-
         }
 
         setInterval(updateClock, 1000);
-
         updateClock();
-
-        /* TABLE ROW ANIMATION */
 
         const rows = document.querySelectorAll("tbody tr");
 
